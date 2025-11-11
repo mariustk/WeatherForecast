@@ -33,5 +33,5 @@ mock_data = {
 # --- Print or save ---
 print(json.dumps(mock_data, indent=2))
 # or write to file:
-with open("mock_forecast.json", "w") as f:
+with open("../app/mock_forecast.json", "w") as f:
     json.dump(mock_data, f, indent=2)
