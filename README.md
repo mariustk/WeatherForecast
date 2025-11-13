@@ -1,114 +1,130 @@
 # Weather Forecast Service
 
-A FastAPI-based service for delivering weather forecasts and scheduling offshore tasks. The API exposes endpoints for retrieving weather windows and managing task statuses while sourcing data from a PostgreSQL database and a JSON-based weather feed.
+This project delivers a FastAPI application for forecasting offshore weather, running schedule analyses, and delegating long-running computations to a Celery worker backed by Redis. PostgreSQL stores task metadata and job results, while a JSON payload provides a lightweight weather feed for demonstration purposes.
 
-## 📚 Documentation
+## Documentation
 
-* Interactive OpenAPI documentation is available once the app is running at **http://localhost:8006/docs**.
+Interactive OpenAPI documentation is available once the API is running at **http://localhost:8006/docs**.
 
-## 🏗️ Architecture Overview
+## Project structure
 
 ```
 WeatherForecast/
 ├── app/
-│   ├── main.py              # FastAPI application entry point & weather endpoints
-│   ├── database.py          # SQLAlchemy engine and session dependency
-│   ├── lib.py               # Wave analysis helpers used by the schedule router
-│   ├── models/              # SQLAlchemy ORM models (e.g., Task)
-│   ├── routers/
-│   │   └── schedule.py      # Task scheduling endpoints, integrates weather feed
-│   ├── mock_forecast.json   # Demo weather data consumed by /weather endpoints
-│   └── weather_forecast.json  # Optional alternate forecast payload
+│   ├── main.py                  # FastAPI entrypoint and weather endpoints
+│   ├── api/
+│   │   ├── schedule.py          # Scheduling endpoints consuming the weather API
+│   │   └── heavy_lift_job.py    # Celery-backed job submission endpoints
+│   ├── celery_app.py            # Celery configuration
+│   ├── celery_tasks/
+│   │   └── heavy_lift.py        # Example background task
+│   ├── database.py              # SQLAlchemy engine and session helpers
+│   ├── init_mock_schedule_db.py # Demo database bootstrapper
+│   ├── lib.py                   # Wave-height analysis helpers
+│   ├── models/                  # ORM models for schedules and jobs
+│   ├── mock_forecast.json       # Sample forecast consumed by the API
+│   └── weather_forecast.json    # Optional alternate forecast payload
 ├── demo_tools/
-│   ├── generate_weather_forecast_mock.py # Utility to regenerate mock forecast JSON
-│   ├── init_mock_schedule_db.py          # Seeds the demo PostgreSQL database
-│   └── reqs.py                           # Minimal example of hitting schedule endpoints
-└── docker-compose.yml       # Postgres service used by the API
+│   ├── generate_weather_forecast_mock.py # Regenerates the demo forecast JSON
+│   └── put_and_post.py                   # Example interactions with the API
+├── docker-compose.yml           # Local stack: API, worker, PostgreSQL, Redis
+└── requirements.txt             # Python dependencies
 ```
 
-Key data flows:
+### How the pieces fit together
 
-1. **Incoming Requests → `app/main.py`** – FastAPI handles `/weather` and `/weather_next_12_hours` using the mock JSON forecast.
-2. **Scheduling API → `app/routers/schedule.py`** – Combines database tasks with weather data fetched from the running FastAPI service and produces go/no-go analyses through `app/lib.py`.
-3. **Database Layer → `app/database.py` & `app/models/`** – SQLAlchemy models and session factories used in request handlers.
-4. **Demo Utilities → `demo_tools/`** – Scripts to populate mock weather data and seed PostgreSQL for local experimentation.
+1. **Weather API (`app/main.py`)** filters the JSON forecast and exposes `/weather` and `/weather_next_12_hours`.
+2. **Schedule router (`app/api/schedule.py`)** queries the database, fetches weather data from the local API, and evaluates workability windows through `app.lib` utilities.
+3. **Celery workflow (`app/api/heavy_lift_job.py` + `app/celery_tasks/heavy_lift.py`)** records jobs in PostgreSQL and processes them asynchronously via Redis-backed workers.
+4. **Database helpers (`app/database.py`, `app/models`)** centralize SQLAlchemy configuration and ORM definitions.
+5. **Demo scripts (`demo_tools/`)** regenerate mock data and showcase basic client interactions.
 
-## 🚀 Getting Started
+## Getting started
 
-### 1. Install Dependencies
-
-Create a virtual environment and install core dependencies:
+### 1. Create a virtual environment
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install fastapi uvicorn "sqlalchemy>=2" psycopg2-binary httpx requests
+pip install -r requirements.txt
 ```
 
-### 2. Launch PostgreSQL with Docker Compose
+### 2. Start infrastructure
+
+Spin up PostgreSQL and Redis, either manually or with Docker Compose:
 
 ```bash
-docker compose up -d db
+docker compose up -d db redis
 ```
 
-The compose file provisions a PostgreSQL 16 container listening on `localhost:5432` with the credentials `postgres/postgres` and database `appdb`.
+Credentials default to `postgres/postgres` with database `appdb` (see `docker-compose.yml`).
 
-### 3. Seed Demo Data
-
-With PostgreSQL running:
+### 3. Seed the demo schema
 
 ```bash
-python -m demo_tools.init_mock_schedule_db
+python -m app.init_mock_schedule_db
 ```
 
-This script drops & recreates the schema defined in `app.models.schedule` and inserts a handful of sample tasks.
+The script recreates the schedule and heavy-lift job tables and inserts sample tasks.
 
-To (re)generate the JSON weather feed consumed by the `/weather` endpoints:
+To refresh the mock forecast consumed by the weather endpoints, run:
 
 ```bash
 python -m demo_tools.generate_weather_forecast_mock
 ```
 
-The command writes a fresh 24-hour forecast into `app/mock_forecast.json`.
+### 4. Run the FastAPI app
 
-### 4. Run the FastAPI Application
-
-Start the API locally on port `8006` (matching the internal schedule client configuration):
+Keep the service on port `8006` so the schedule router can reach the weather API without code changes:
 
 ```bash
 uvicorn app.main:app --reload --port 8006
 ```
 
-The server now exposes:
+The server exposes the following endpoints:
 
-* `GET /weather` – Filtered forecast between two Unix timestamps for a `lat,lon` location.
-* `GET /weather_next_12_hours` – Convenience endpoint for the upcoming 12 hours.
-* `GET /schedule/window` – Combines database tasks with forecast data to compute go/no-go windows.
-* `GET /schedule/all_tasks`, `PUT /schedule/task/{id}/complete`, `PUT /schedule/task/{id}/started` – Simple task management operations.
+* `GET /weather`
+* `GET /weather_next_12_hours`
+* `GET /schedule/window`
+* `GET /schedule/tasks`
+* `PUT /schedule/task/{id}/started`
+* `PUT /schedule/task/{id}/complete`
+* `POST /celery-worker/heavy-lift`
+* `GET /celery-worker/tasks`
 
-### 5. Try the Demo Endpoints
+### 5. Run a Celery worker (optional but required for heavy-lift jobs)
 
-* Visit **http://localhost:8006/docs** to explore and call endpoints via Swagger UI.
-* Use the helper script to trigger an example request:
+```bash
+celery -A app.celery_app:celery_app worker -l info
+```
 
-  ```bash
-  python -m demo_tools.reqs
-  ```
+Ensure `CELERY_BROKER_URL` and `CELERY_RESULT_BACKEND` point to your Redis instance. When using Docker Compose, these default to the bundled Redis service.
 
-  (Ensure the API server is running on port 8006 and adjust the URL inside `demo_tools/reqs.py` if necessary.)
+### 6. Try the demo
 
-### 6. Shut Down
+* Visit **http://localhost:8006/docs** for interactive API docs.
+* Trigger sample requests with `python -m demo_tools.put_and_post`.
 
-When finished, stop the database container:
+### 7. Shut everything down
 
 ```bash
 docker compose down
 ```
 
-## 🧪 Development Tips
+## Environment variables
 
-* Update `app/mock_forecast.json` whenever you want new weather scenarios without touching the code.
-* Modify `demo_tools/init_mock_schedule_db.py` to tailor the seeded tasks for testing different scheduling outcomes.
-* If you change the API port, update the base URL used in `app/routers/schedule.py` and any demo scripts referencing the service.
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `DATABASE_URL` | SQLAlchemy connection string | `postgresql+psycopg2://postgres:postgres@localhost:5432/appdb` |
+| `CELERY_BROKER_URL` | Celery broker location | `redis://redis:6379/0` |
+| `CELERY_RESULT_BACKEND` | Celery result backend | `redis://redis:6379/1` |
 
-Happy forecasting! 🌤️
+Override these as needed when deploying or running locally without Docker.
+
+## Development tips
+
+* Update `app/mock_forecast.json` to model different sea states without touching application code.
+* Adjust `app/lib.py` to experiment with alternative go/no-go logic.
+* If you change the API port, also update the hard-coded URL in `app/api/schedule.py`.
+
+Enjoy building on the service.
