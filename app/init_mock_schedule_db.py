@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.models import Base
 from app.models.schedule import Task
-from app.models.heavy_lift_job import HeavyLiftJob
+from app.models.celery_job import CeleryJob
 import os
 
 def init_db_demo():

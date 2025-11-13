@@ -3,8 +3,8 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, DateTim
 from datetime import datetime
 from app.models import Base
 
-class HeavyLiftJob(Base):
-    __tablename__ = "heavy_lift_jobs"
+class CeleryJob(Base):
+    __tablename__ = "celery_job"
     id = Column(Integer, primary_key=True)
 
     # Store params as JSON (string) – safer than trying to enforce a schema here.

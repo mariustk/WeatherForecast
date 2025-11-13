@@ -4,7 +4,7 @@ This project delivers a FastAPI application for forecasting offshore weather, ru
 
 ## Documentation
 
-Interactive OpenAPI documentation is available once the API is running at **http://localhost:8006/docs**.
+Interactive OpenAPI documentation is available once the API is running at **http://localhost:8020/docs**.
 
 ## Project structure
 
@@ -34,19 +34,17 @@ WeatherForecast/
 ### How the pieces fit together
 
 1. **Weather API (`app/main.py`)** filters the JSON forecast and exposes `/weather` and `/weather_next_12_hours`.
-2. **Schedule router (`app/api/schedule.py`)** queries the database, fetches weather data from the local API, and evaluates workability windows through `app.lib` utilities.
+2. **Schedule router (`app/api/schedule.py`)** queries the database, fetches weather data from the local API, and evaluates workability windows through `app.lib` utilities (placeholder for external libraries).
 3. **Celery workflow (`app/api/heavy_lift_job.py` + `app/celery_tasks/heavy_lift.py`)** records jobs in PostgreSQL and processes them asynchronously via Redis-backed workers.
 4. **Database helpers (`app/database.py`, `app/models`)** centralize SQLAlchemy configuration and ORM definitions.
 5. **Demo scripts (`demo_tools/`)** regenerate mock data and showcase basic client interactions.
 
 ## Getting started
 
-### 1. Create a virtual environment
-
+### 1. Launch docker setup
+This assumes docker is installed on host
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+docker compose up --build
 ```
 
 ### 2. Start infrastructure

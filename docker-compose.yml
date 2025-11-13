@@ -12,7 +12,6 @@ services:
       POSTGRES_DB: appdb
     volumes: [pgdata:/var/lib/postgresql/data]
 
-
   api:
     build: .
     depends_on:
