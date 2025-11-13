@@ -142,7 +142,7 @@ async def schedule_window(
 
 
 
-@router.get("/all_tasks")
+@router.get("/tasks")
 def get_all_tasks(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
     """Return all task."""
     tasks = db.execute(select(Task)).scalars().all()

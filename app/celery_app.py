@@ -12,6 +12,6 @@ celery_app = Celery(
 )
 
 #Import submodules
-celery_app.autodiscover_tasks(["app.celery_tasks"])
+celery_app.autodiscover_tasks(["app"],related_name="celery_tasks")
 
-# Print all autodiscovered tasks:
+

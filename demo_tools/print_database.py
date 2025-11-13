@@ -7,7 +7,7 @@ def get_engine():
     # Use env var if set, otherwise default to your earlier connection string
     db_url = os.getenv(
         "DATABASE_URL",
-        "postgresql+psycopg2://postgres:postgres@localhost:5432/appdb",
+        "postgresql+psycopg2://postgres:postgres@db:5432/appdb",
     )
     return create_engine(db_url)
 

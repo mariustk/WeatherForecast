@@ -8,7 +8,7 @@ from app.api import heavy_lift_job
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from app.models.schedule import Task, Base
-
+from app.init_mock_schedule_db import init_db_demo
 
 app = FastAPI()
 app.include_router(schedule.router)
@@ -20,6 +20,7 @@ DATA_PATH = Path(__file__).parent / "mock_forecast.json"
 with open(DATA_PATH, "r") as f:
     weather_data = json.load(f)
 
+init_db_demo()
 
 @app.get("/")
 def root():
