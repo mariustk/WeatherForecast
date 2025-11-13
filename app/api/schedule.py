@@ -1,4 +1,4 @@
-# routers/schedule.py
+# api/schedule.py
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -8,7 +8,9 @@ from app.database import get_db  # you'd define get_db() returning a session
 from app.lib import wow_analysis
 from datetime import datetime, timezone, timedelta
 import httpx
-# ---- Helpers ----
+
+router = APIRouter(prefix="/schedule", tags=["schedule"])
+
 def parse_hours(duration_str: str) -> int:
     # expects like "4h"
     if not duration_str.endswith("h"):
@@ -20,9 +22,6 @@ def unix_seconds(dt: datetime) -> int:
 
 def iso_utc(dt: datetime) -> str:
     return dt.replace(microsecond=0).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-router = APIRouter(prefix="/schedule", tags=["schedule"])
 
 @router.get("/window") # Async due to "Call to external API (weather forecast)
 async def schedule_window(
@@ -145,7 +144,7 @@ async def schedule_window(
 
 @router.get("/all_tasks")
 def get_all_tasks(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
-    """Return all tasks."""
+    """Return all task."""
     tasks = db.execute(select(Task)).scalars().all()
     return [
         {

@@ -1,8 +1,10 @@
 # init_db.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from app.models import Base
+from app.models.schedule import Task
+from app.models.heavy_lift_job import HeavyLiftJob
 
-from app.models.schedule import Base, Task
 
 # matches your docker-compose settings
 DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/appdb"
@@ -11,7 +13,7 @@ engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# DEMO ONLY: wipe and recreate
+# DEMO: wipe and recreate
 Base.metadata.drop_all(engine)
 Base.metadata.create_all(engine)
 
@@ -27,3 +29,6 @@ tasks = [
 session.add_all(tasks)
 session.commit()
 session.close()
+
+
+

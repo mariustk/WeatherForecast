@@ -3,7 +3,8 @@ from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List
 import json
 from pathlib import Path
-from app.routers import schedule
+from app.api import schedule
+from app.api import heavy_lift_job
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from app.models.schedule import Task, Base
@@ -11,6 +12,7 @@ from app.models.schedule import Task, Base
 
 app = FastAPI()
 app.include_router(schedule.router)
+app.include_router(heavy_lift_job.router)
 
 
 # Load JSON mock at startup
