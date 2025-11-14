@@ -1,3 +1,5 @@
+"""Weather service endpoints backed by the static JSON forecast file."""
+
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -6,7 +8,7 @@ from app.models.celery_job import CeleryJob
 from app.celery_app import celery_app
 from sqlalchemy import select
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 
@@ -24,6 +26,7 @@ def get_weather(
     time_from: int = Query(..., alias="from", description="Start timestamp (unix seconds, UTC)"),
     time_to: int = Query(..., description="End timestamp (unix seconds, UTC)")
 ) -> Dict[str, Any]:
+    """Return forecast data filtered by the requested location and time range."""
     # Parse and validate location
     try:
         lat_str, lon_str = location.split(",")
@@ -51,6 +54,7 @@ def get_weather(
 
 @router.get("/weather_next_12_hours")
 def get_weather_next_12_hours(location: str = Query(..., description="Format: lat,lon")) -> Dict[str, Any]:
+    """Return the next twelve hours of forecast data for the requested location."""
 
     # Parse and validate location
     try:

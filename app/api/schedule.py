@@ -1,3 +1,5 @@
+"""Scheduling endpoints that orchestrate tasks using weather forecasts."""
+
 # api/schedule.py
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -12,15 +14,18 @@ import httpx
 router = APIRouter(prefix="/schedule", tags=["schedule"])
 
 def parse_hours(duration_str: str) -> int:
+    """Convert a duration string such as ``"4h"`` into an integer hour value."""
     # expects like "4h"
     if not duration_str.endswith("h"):
         raise ValueError("duration must be like '4h'")
     return int(duration_str[:-1])
 
 def unix_seconds(dt: datetime) -> int:
+    """Convert a timezone-aware datetime into Unix seconds."""
     return int(dt.timestamp())
 
 def iso_utc(dt: datetime) -> str:
+    """Serialise a datetime to an ISO 8601 UTC string without fractional seconds."""
     return dt.replace(microsecond=0).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 @router.get("/window") # Async due to "Call to external API (weather forecast)
@@ -31,6 +36,7 @@ async def schedule_window(
     lookahead_hours: int = Query(12, ge=1, le=168, description="Forecast horizon in hours (default 12)"),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
+    """Calculate start windows for the schedule based on forecasted wave conditions."""
 
     # Fetch task
     task = db.get(Task, schedule_id)
@@ -144,7 +150,7 @@ async def schedule_window(
 
 @router.get("/tasks")
 def get_all_tasks(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
-    """Return all task."""
+    """Return all tasks stored in the scheduling table."""
     tasks = db.execute(select(Task)).scalars().all()
     return [
         {
@@ -160,9 +166,7 @@ def get_all_tasks(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
 
 @router.put("/task/{task_id}/complete") # PUT since we are modifying underlying database
 def mark_task_complete(task_id: int, db: Session = Depends(get_db)) -> Dict[str, Any]:
-    """
-    Mark a specific task as completed.
-    """
+    """Mark a specific task as completed and return the updated record."""
     task = db.get(Task, task_id)
     if not task:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
@@ -187,9 +191,7 @@ def mark_task_complete(task_id: int, db: Session = Depends(get_db)) -> Dict[str,
 
 @router.put("/task/{task_id}/started") # PUT since we are modifying underlying database
 def mark_task_complete(task_id: int, db: Session = Depends(get_db)) -> Dict[str, Any]:
-    """
-    Mark a specific task as completed.
-    """
+    """Mark a specific task as started and return the updated record."""
     task = db.get(Task, task_id)
     if not task:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
