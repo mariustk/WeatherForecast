@@ -1,3 +1,5 @@
+"""Celery worker management endpoints for the demo API."""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -11,6 +13,7 @@ router = APIRouter(prefix="/celery-worker", tags=["celery worker"])
 
 @router.post("/submit_complicated_job", status_code=202) # Staus code 202 Accepted
 def submit_complicated_job(params: dict, db: Session = Depends(get_db)):
+    """Persist a Celery job request and dispatch it to the worker queue."""
     job = CeleryJob(params=json.dumps(params), status="PENDING")
     db.add(job)
     db.commit()
@@ -24,7 +27,7 @@ def submit_complicated_job(params: dict, db: Session = Depends(get_db)):
 
 @router.get("/tasks")
 def get_celery_tasks(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
-    """Return all task."""
+    """Return the persisted Celery jobs and their current status."""
     tasks = db.execute(select(CeleryJob)).scalars().all()
     return [
         {
