@@ -14,9 +14,9 @@ The app is designed using FastAPI. FastAPI is selected as it's a more modern API
 
 ### PostgreSQL
 Selected on the following criteria
--Price(open source)
--JSON support
--Familiar with relational databases
+- Price(open source)
+- JSON support
+- Familiar with relational databases
 
 
 ### Docker
