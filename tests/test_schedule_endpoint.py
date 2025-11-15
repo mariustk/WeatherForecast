@@ -1,15 +1,15 @@
+import os
 from datetime import datetime, timedelta, timezone
 import re
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
+import requests
 from app.api.external_weather import router as weather_router
 
 def test_schedule_tasks_format():
-    app = FastAPI()
-    app.include_router(weather_router)
-    client = TestClient(app)
-    response = client.get("/schedule/tasks")
+
+    api_address = os.getenv("API_URL")
+    response = requests.get(f"{api_address}/schedule/tasks")
     required_keys = {
         "id",
         "name",
