@@ -57,4 +57,4 @@ uvicorn app.main:app --reload --port 8020
 
 
 ## Testing
-The docker containers can be launched with GitHub actions to perform tests in the api calls.
+The docker containers can be launched with GitHub actions to perform tests with the api calls.
