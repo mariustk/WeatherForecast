@@ -1,30 +1,23 @@
 """Weather service endpoints backed by the static JSON forecast file."""
 
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session
-from app.database import get_db
-from typing import List, Dict, Any
-from app.models.celery_job import CeleryJob
-from app.celery_app import celery_app
-from sqlalchemy import select
+from fastapi import APIRouter, Query, HTTPException
+from typing import Dict, Any
 import json
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-
 
 # Load JSON mock at startup
 DATA_PATH = Path(__file__).parent.parent / "mock_forecast.json"
 with open(DATA_PATH, "r") as f:
     weather_data = json.load(f)
 
-
 router = APIRouter(prefix="/weather-service", tags=["weather service"])
 
 @router.get("/weather")
 def get_weather(
-    location: str = Query(..., description="Format: lat,lon"),
+    location: str = Query("61.5,4.8", description="Format: lat,lon"),
     time_from: int = Query(..., alias="from", description="Start timestamp (unix seconds, UTC)"),
-    time_to: int = Query(..., description="End timestamp (unix seconds, UTC)")
+    time_to: int = Query(...,le=10000000000, description="End timestamp (unix seconds, UTC)")
 ) -> Dict[str, Any]:
     """Return forecast data filtered by the requested location and time range."""
     # Parse and validate location
@@ -45,12 +38,11 @@ def get_weather(
         if from_time <= entry_time <= to_time:
             filtered_forecast.append(entry)
 
-    # Echo requested location; or validate against file if you prefer
+    # Echo requested location
     return {
         "location": {"lat": lat, "lon": lon},
         "forecast": filtered_forecast,
     }
-
 
 @router.get("/weather_next_12_hours")
 def get_weather_next_12_hours(location: str = Query(..., description="Format: lat,lon")) -> Dict[str, Any]:

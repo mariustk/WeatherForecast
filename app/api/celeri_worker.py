@@ -1,5 +1,4 @@
 """Celery worker management endpoints for the demo API."""
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db

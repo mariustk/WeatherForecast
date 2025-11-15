@@ -6,7 +6,7 @@ BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/1")
 
 # Celery app using docker
 celery_app = Celery(
-    "heavy_lifting_service",
+    "Celery service",
     broker=BROKER,
     backend=BACKEND,
 )
