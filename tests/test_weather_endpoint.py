@@ -24,7 +24,7 @@ def test_weather_endpoint_filters_forecast_range():
     payload = response.json()
 
     assert payload["location"] == {"lat": 61.5, "lon": 4.8}
-    assert len(payload["forecast"]) == 1
+    assert len(payload["forecast"]) == 1, f'{payload["forecast"]}'
 
     forecast_entry = payload["forecast"][0]
     assert forecast_entry["timestamp"] == "2025-11-11T21:55:23Z"
