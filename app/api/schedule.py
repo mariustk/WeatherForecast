@@ -31,8 +31,8 @@ def iso_utc(dt: datetime) -> str:
 @router.get("/window") # Async due to "Call to external API (weather forecast)
 async def schedule_window(
     schedule_id: int = Query(..., description="ID of the task/schedule"),
-    lat: float = Query(...),
-    lon: float = Query(...),
+    lat: float = Query(61.5),
+    lon: float = Query(4.8),
     lookahead_hours: int = Query(12, ge=1, le=168, description="Forecast horizon in hours (default 12)"),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
@@ -59,7 +59,7 @@ async def schedule_window(
     }
 
     async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.get("http://localhost:8006/weather", params=params) # Pretending that this is external
+        resp = await client.get("http://localhost:8020/weather-service/weather", params=params) # Pretending that this is external
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=f"Weather API error: {resp.text}")
 
@@ -190,7 +190,7 @@ def mark_task_complete(task_id: int, db: Session = Depends(get_db)) -> Dict[str,
 
 
 @router.put("/task/{task_id}/started") # PUT since we are modifying underlying database
-def mark_task_complete(task_id: int, db: Session = Depends(get_db)) -> Dict[str, Any]:
+def mark_task_started(task_id: int, db: Session = Depends(get_db)) -> Dict[str, Any]:
     """Mark a specific task as started and return the updated record."""
     task = db.get(Task, task_id)
     if not task:

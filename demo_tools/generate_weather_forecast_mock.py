@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 # --- Settings ---
 lat, lon = 61.5, 4.8
 start_time = datetime.now(tz=timezone.utc)
-end_time = start_time + timedelta(hours=24)
+end_time = start_time + timedelta(hours=24*7)
 step = timedelta(minutes=30)
 
 # --- Generate forecast data ---

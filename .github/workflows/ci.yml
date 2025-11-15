@@ -18,15 +18,15 @@ jobs:
 
       - name: Build and start docker-compose stack
         run: |
-          docker-compose -f docker-compose.yml up -d --build
+          docker compose -f docker-compose.yml up -d --build
           sleep 20
 
       - name: Show running containers
         run: docker ps
 
       - name: Run tests in api container
-        run: docker-compose exec -T api pytest
+        run: docker compose exec -T api pytest
 
       - name: Tear down
         if: always()
-        run: docker-compose -f docker-compose.yml down -v
+        run: docker compose -f docker-compose.yml down -v
