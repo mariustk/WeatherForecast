@@ -1,6 +1,7 @@
 # Weather Forecast Service
 This project delivers a FastAPI application for forecasting offshore weather, running schedule analyses, and delegating long-running computations to a Celery worker backed by Redis. PostgreSQL stores task metadata and job results, while a JSON payload provides a lightweight weather feed for demonstration purposes.
 
+As part 2 of the "case", part 2 system design can be found under root.
 ## Documentation
 Interactive OpenAPI documentation is available once the API is running at **http://localhost:8020/docs**.
 
