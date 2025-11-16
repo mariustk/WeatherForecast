@@ -23,11 +23,10 @@ Selected on the following criteria
 ### Docker
 Docker is used to bundle the app. It is portable and easy to spin up across computers/clients
 
-
 ## Getting started
 
 ### Launch docker setup
-This assumes docker is installed on host
+This assumes docker is installed on host, and will launch the database, the api and the celery worker. No need to perform any other steps to get the demo up running.
 ```bash
 docker compose up --build
 ```
@@ -35,13 +34,13 @@ docker compose up --build
 Credentials default to `postgres/postgres` with database `appdb` (see `docker-compose.yml`).
 
 ### Seed the demo schema
-This is automatically done in the app, but schould be removed in a production app
+This is automatically done in the app, but should be removed in a production app
 ```bash
 python -m app.init_mock_schedule_db
 ```
 
 ### Patch mock dat-set for weather forecast
-Script that enlarges the mock data-set provided, such that we can use today+12h without running out of data.
+Script that enlarges the mock data-set provided ([mock_forecast.json](app%2Fmock_forecast.json)), such that we can use today+12h without running out of data. Re-run this prior to launching the docker compose to ensure that there are sufficient demo data in the .JSON file.
 ```bash
 python -m demo_tools.generate_weather_forecast_mock
 ```
@@ -58,4 +57,4 @@ uvicorn app.main:app --reload --port 8020
 
 
 ## Testing
-The docker containers can be launched with GitHub actions to perform tests with the api calls.
+The docker containers can be launched with GitHub actions to perform tests on the endpoints.
