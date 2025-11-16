@@ -53,6 +53,7 @@ uvicorn app.main:app --reload --port 8020
 ```
 
 ### Try the demo
+* Launch the app with docker
 * Visit **http://localhost:8020/docs** for interactive API docs.
 * Trigger sample requests with `python -m demo_tools.put_and_post`.
 
