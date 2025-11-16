@@ -39,7 +39,7 @@ This is automatically done in the app, but should be removed in a production app
 python -m app.init_mock_schedule_db
 ```
 
-### Patch mock dat-set for weather forecast
+### Patch mock data-set for weather forecast
 Script that enlarges the mock data-set provided ([mock_forecast.json](app%2Fmock_forecast.json)), such that we can use today+12h without running out of data. Re-run this prior to launching the docker compose to ensure that there are sufficient demo data in the .JSON file.
 ```bash
 python -m demo_tools.generate_weather_forecast_mock
