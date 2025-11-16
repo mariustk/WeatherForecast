@@ -107,14 +107,10 @@ async def schedule_window(
         cur_time += timedelta(hours=1)
 
     if not timeline:
-        return {
-            "schedule_id": schedule_id,
-            "task": {"duration": task.duration, "wave_height_limit": wave_height_limit},
-            "location": {"lat": lat, "lon": lon},
-            "hourly_forecast": [],
-            "analysis": {"go_no_go": [], "start_windows": []},
-            "note": "No hourly buckets with data.",
-        }
+        raise HTTPException(
+            status_code=502,
+            detail="Insufficient hourly resolution/continuity from external weather source.",
+        )
 
     # WOW analysis over hourly wave height series
     wave_series = [p["wave_height"] for p in timeline]
