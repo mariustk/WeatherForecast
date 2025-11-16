@@ -34,9 +34,10 @@ docker compose up --build
 Credentials default to `postgres/postgres` with database `appdb` (see `docker-compose.yml`).
 
 ### Seed the demo schema
-This is automatically done in the app, but should be removed in a production app
-```bash
-python -m app.init_mock_schedule_db
+This is automatically done in the app, but should be removed in a production app, namely these lines in main.py:
+```python
+from app.init_mock_schedule_db import init_db_demo
+init_db_demo()
 ```
 
 ### Patch mock data-set for weather forecast
